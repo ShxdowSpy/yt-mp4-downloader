@@ -1,0 +1,8 @@
+downloads/
+__pycache__/
+*.pyc
+*.mp4
+*.mp3
+*.MP3
+.env
+web_downloader/instance/

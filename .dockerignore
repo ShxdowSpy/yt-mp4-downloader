@@ -1,0 +1,13 @@
+downloads/
+*.mp4
+*.mp3
+*.MP3
+__pycache__/
+*.pyc
+.claude/
+images/
+*.html
+serve.py
+generate_images.py
+list_models.py
+yt_downloader.py

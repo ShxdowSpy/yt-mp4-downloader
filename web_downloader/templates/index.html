@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YT → MP4</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080808;
+      --surface:   #101010;
+      --border:    #1e1e1e;
+      --border2:   #2a2a2a;
+      --red:       #e50000;
+      --red-dim:   #8a0000;
+      --text:      #d4d4d4;
+      --muted:     #555;
+      --success:   #22c55e;
+      --error:     #ef4444;
+      --mono:      "SF Mono", "Fira Code", "Cascadia Code", monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /* ── header ── */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      user-select: none;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--red);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-icon svg { display: block; }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+
+    .logo-text span { color: var(--muted); font-weight: 400; }
+
+    header p {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+    }
+
+    /* ── card ── */
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    /* ── tool warning ── */
+    .tool-warn {
+      background: #1a0f00;
+      border: 1px solid #4a2500;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #f59e0b;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .tool-warn code {
+      font-family: var(--mono);
+      background: #2a1800;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── form elements ── */
+    .field { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    input[type="text"]:focus,
+    select:focus { border-color: #444; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    select option { background: #1a1a1a; }
+
+    /* ── button ── */
+    button#dlBtn {
+      width: 100%;
+      background: var(--red);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      padding: 13px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s, transform 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button#dlBtn:hover:not(:disabled) { background: #cc0000; }
+    button#dlBtn:active:not(:disabled) { transform: scale(0.99); }
+    button#dlBtn:disabled { background: var(--red-dim); cursor: not-allowed; opacity: 0.7; }
+
+    /* ── progress section ── */
+    #progressSection {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .progress-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .progress-stats {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 4px;
+      background: var(--border2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--red);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    .progress-percent {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .progress-eta {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── status messages ── */
+    #statusMsg {
+      margin-top: 20px;
+      border-radius: 10px;
+      padding: 13px 15px;
+      font-size: 13px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    #statusMsg.success {
+      background: #0d1f14;
+      border: 1px solid #166534;
+      color: var(--success);
+    }
+
+    #statusMsg.error {
+      background: #1f0d0d;
+      border: 1px solid #991b1b;
+      color: var(--error);
+    }
+
+    /* ── cancel ── */
+    #cancelBtn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 6px 14px;
+      cursor: pointer;
+      margin-top: 14px;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    #cancelBtn:hover { border-color: #444; color: var(--text); }
+
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── footer ── */
+    footer {
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <!-- YouTube play icon -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+        <polygon points="5,3 19,12 5,21"/>
+      </svg>
+    </div>
+    <span class="logo-text">YT <span>→</span> MP4</span>
+  </div>
+  <p>Download YouTube videos up to 4K</p>
+</header>
+
+<div class="card">
+
+  {% if not tools_ok %}
+  <div class="tool-warn">
+    Missing tools. Install with:<br>
+    <code>pip3 install yt-dlp</code> &nbsp;·&nbsp; <code>brew install ffmpeg</code>
+  </div>
+  {% endif %}
+
+  <div class="field">
+    <label for="urlInput">YouTube URL</label>
+    <input
+      id="urlInput"
+      type="text"
+      placeholder="https://www.youtube.com/watch?v=..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+  </div>
+
+  <div class="field">
+    <label for="qualitySelect">Quality</label>
+    <select id="qualitySelect">
+      <option value="best">Best available</option>
+      <option value="2160">4K · 2160p</option>
+      <option value="1440">2K · 1440p</option>
+      <option value="1080" selected>Full HD · 1080p</option>
+      <option value="720">HD · 720p</option>
+      <option value="480">SD · 480p</option>
+      <option value="360">Low · 360p</option>
+    </select>
+  </div>
+
+  <button id="dlBtn" {% if not tools_ok %}disabled{% endif %}>
+    Download MP4
+  </button>
+
+  <div id="progressSection">
+    <div class="divider"></div>
+    <div class="progress-header">
+      <span class="progress-label">Downloading</span>
+      <span class="progress-stats" id="progressSpeed"></span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-meta">
+      <span class="progress-percent" id="progressPct">0%</span>
+      <span class="progress-eta" id="progressEta"></span>
+    </div>
+    <button id="cancelBtn">Cancel</button>
+  </div>
+
+  <div id="statusMsg"></div>
+
+</div>
+
+<footer>Files saved to <code>./downloads/</code></footer>
+
+<script>
+  const urlInput      = document.getElementById('urlInput');
+  const qualitySelect = document.getElementById('qualitySelect');
+  const dlBtn         = document.getElementById('dlBtn');
+  const cancelBtn     = document.getElementById('cancelBtn');
+  const progressSec   = document.getElementById('progressSection');
+  const progressFill  = document.getElementById('progressFill');
+  const progressPct   = document.getElementById('progressPct');
+  const progressSpeed = document.getElementById('progressSpeed');
+  const progressEta   = document.getElementById('progressEta');
+  const statusMsg     = document.getElementById('statusMsg');
+
+  let currentJobId = null;
+  let sse = null;
+
+  function setStatus(type, msg) {
+    statusMsg.className = type;
+    statusMsg.textContent = msg;
+    statusMsg.style.display = 'block';
+  }
+
+  function clearStatus() {
+    statusMsg.style.display = 'none';
+    statusMsg.className = '';
+    statusMsg.textContent = '';
+  }
+
+  function setProgress(pct, speed, eta) {
+    progressFill.style.width = pct + '%';
+    progressPct.textContent  = pct.toFixed(1) + '%';
+    progressSpeed.textContent = speed || '';
+    progressEta.textContent  = eta ? 'ETA ' + eta : '';
+  }
+
+  function resetUI() {
+    dlBtn.disabled = false;
+    dlBtn.textContent = 'Download MP4';
+    progressSec.style.display = 'none';
+    setProgress(0, '', '');
+    currentJobId = null;
+    if (sse) { sse.close(); sse = null; }
+  }
+
+  async function startDownload() {
+    const url     = urlInput.value.trim();
+    const quality = qualitySelect.value;
+
+    if (!url) {
+      setStatus('error', 'Please paste a YouTube URL.');
+      return;
+    }
+
+    clearStatus();
+    dlBtn.disabled = true;
+    dlBtn.textContent = 'Starting…';
+    progressSec.style.display = 'block';
+    setProgress(0, '', '');
+
+    let jobId;
+    try {
+      const res = await fetch('/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, quality }),
+      });
+      const data = await res.json();
+      if (!res.ok) { throw new Error(data.error || 'Failed to start.'); }
+      jobId = data.job_id;
+    } catch (err) {
+      setStatus('error', err.message);
+      resetUI();
+      return;
+    }
+
+    currentJobId = jobId;
+    dlBtn.textContent = 'Downloading…';
+
+    sse = new EventSource('/progress/' + jobId);
+
+    sse.onmessage = (e) => {
+      let ev;
+      try { ev = JSON.parse(e.data); } catch { return; }
+
+      if (ev.type === 'progress') {
+        setProgress(ev.percent, ev.speed, ev.eta);
+      } else if (ev.type === 'done') {
+        setProgress(100, '', '');
+        setStatus('success', `Done — saving "${ev.filename}"`);
+        sse.close(); sse = null;
+        // trigger browser download
+        setTimeout(() => {
+          window.location.href = '/download/' + jobId;
+          resetUI();
+        }, 600);
+      } else if (ev.type === 'error') {
+        setStatus('error', ev.message || 'Download failed.');
+        resetUI();
+      }
+      // heartbeat: ignore
+    };
+
+    sse.onerror = () => {
+      if (sse) { sse.close(); sse = null; }
+      // only show error if we didn't already finish
+      if (currentJobId) {
+        setStatus('error', 'Connection lost. Check server logs.');
+        resetUI();
+      }
+    };
+  }
+
+  async function cancelDownload() {
+    if (!currentJobId) return;
+    await fetch('/cancel/' + currentJobId, { method: 'POST' }).catch(() => {});
+    if (sse) { sse.close(); sse = null; }
+    resetUI();
+    setStatus('error', 'Download cancelled.');
+  }
+
+  dlBtn.addEventListener('click', startDownload);
+  cancelBtn.addEventListener('click', cancelDownload);
+
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') startDownload();
+  });
+</script>
+</body>
+</html>
