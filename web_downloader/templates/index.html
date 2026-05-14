@@ -54,14 +54,10 @@
     }
 
     .logo-icon {
-      width: 32px;
-      height: 32px;
-      background: var(--red);
-      border-radius: 7px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
     }
 
     .logo-icon svg { display: block; }
@@ -294,9 +290,9 @@
 <header>
   <div class="logo">
     <div class="logo-icon">
-      <!-- YouTube play icon -->
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-        <polygon points="5,3 19,12 5,21"/>
+      <svg width="48" height="34" viewBox="0 0 48 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="34" rx="10" fill="#FF0000"/>
+        <polygon points="18,9 35,17 18,25" fill="white"/>
       </svg>
     </div>
     <span class="logo-text">YT <span>→</span> MP4</span>
@@ -361,7 +357,7 @@
 
 </div>
 
-<footer>Files saved to <code>./downloads/</code></footer>
+<footer>The mp4 files are sent to your downloads folder</footer>
 
 <script>
   const urlInput      = document.getElementById('urlInput');

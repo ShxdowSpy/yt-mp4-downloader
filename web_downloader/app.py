@@ -116,8 +116,10 @@ def worker(job_id: str, url: str, height: str) -> None:
             job["proc"] = proc
 
         filepath = None
+        output_lines = []
         for line in proc.stdout:
             line = line.rstrip()
+            output_lines.append(line)
 
             # Capture the destination file path
             m = re.search(r'\[(?:download|Merger)\].*Destination:\s+(.+\.mp4)', line)
@@ -145,7 +147,8 @@ def worker(job_id: str, url: str, height: str) -> None:
                 "filename": filepath.name if filepath else "video.mp4",
             })
         else:
-            msg = "Video unavailable or download failed."
+            error_lines = [l for l in output_lines if "ERROR" in l or "error" in l.lower()]
+            msg = error_lines[-1] if error_lines else (output_lines[-1] if output_lines else "Download failed.")
             with jobs_lock:
                 job["status"] = "error"
                 job["error"] = msg
