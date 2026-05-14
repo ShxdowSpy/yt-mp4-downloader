@@ -65,8 +65,12 @@ app = Flask(
 # ── helpers ──────────────────────────────────────────────────────────────────
 def build_format_selector(height: str) -> str:
     if height == "best":
-        return "best[ext=mp4]/best"
-    return f"best[height<={height}][ext=mp4]/best[height<={height}]/best[ext=mp4]/best"
+        return "bestvideo[ext=mp4]+bestaudio[ext=m4a]/18/best[ext=mp4]/best"
+    return (
+        f"bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]"
+        f"/bestvideo[height<={height}]+bestaudio"
+        f"/18/best[height<={height}][ext=mp4]/best[ext=mp4]/best"
+    )
 
 
 def parse_progress_line(line: str) -> Optional[dict]:
@@ -106,7 +110,7 @@ def worker(job_id: str, url: str, height: str) -> None:
         "--output", out_template,
         "--progress", "--newline",
         "--no-playlist",
-        "--extractor-args", "youtube:player_client=mweb,web_creator",
+        "--extractor-args", "youtube:player_client=web",
         url,
     ]
     if _COOKIES_FILE:
