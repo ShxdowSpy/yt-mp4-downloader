@@ -105,7 +105,6 @@ def worker(job_id: str, url: str, height: str) -> None:
         "--output", out_template,
         "--progress", "--newline",
         "--no-playlist",
-        "--extractor-args", "youtube:player_client=ios",
         url,
     ]
     if _COOKIES_FILE:
