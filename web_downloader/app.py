@@ -32,6 +32,9 @@ if _cookies_content:
     _tmp.write(_cookies_content)
     _tmp.close()
     _COOKIES_FILE = _tmp.name
+    print(f"  cookies: loaded ({len(_cookies_content)} chars) → {_COOKIES_FILE}")
+else:
+    print("  cookies: NOT SET — set YOUTUBE_COOKIES env var")
 
 QUALITY_MAP = {
     "best":  ("best",  "Best available"),
