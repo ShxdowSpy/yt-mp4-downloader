@@ -32,7 +32,8 @@ if _cookies_content:
     _tmp.write(_cookies_content)
     _tmp.close()
     _COOKIES_FILE = _tmp.name
-    print(f"  cookies: loaded ({len(_cookies_content)} chars) → {_COOKIES_FILE}")
+    first_line = _cookies_content.splitlines()[0] if _cookies_content else ""
+    print(f"  cookies: loaded ({len(_cookies_content)} chars), first line: {first_line!r}")
 else:
     print("  cookies: NOT SET — set YOUTUBE_COOKIES env var")
 
