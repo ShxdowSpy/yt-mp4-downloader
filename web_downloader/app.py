@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import threading
 import uuid
 from pathlib import Path
@@ -22,6 +23,15 @@ FFMPEG_BIN = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
 BASE_DIR = Path(__file__).parent.parent          # project root
 DOWNLOADS_DIR = BASE_DIR / "downloads"
 DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Write cookies to a temp file if provided via env var
+_COOKIES_FILE: Optional[str] = None
+_cookies_content = os.environ.get("YOUTUBE_COOKIES", "").strip()
+if _cookies_content:
+    _tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False)
+    _tmp.write(_cookies_content)
+    _tmp.close()
+    _COOKIES_FILE = _tmp.name
 
 QUALITY_MAP = {
     "best":  ("best",  "Best available"),
@@ -101,9 +111,10 @@ def worker(job_id: str, url: str, height: str) -> None:
         "--output", out_template,
         "--progress", "--newline",
         "--no-playlist",
-        "--extractor-args", "youtube:player_client=ios,web_creator",
         url,
     ]
+    if _COOKIES_FILE:
+        cmd[1:1] = ["--cookies", _COOKIES_FILE]
 
     try:
         proc = subprocess.Popen(
