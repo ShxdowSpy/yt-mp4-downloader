@@ -61,17 +61,8 @@ app = Flask(
 # ── helpers ──────────────────────────────────────────────────────────────────
 def build_format_selector(height: str) -> str:
     if height == "best":
-        return (
-            "bestvideo[ext=mp4]+bestaudio[ext=m4a]"
-            "/bestvideo+bestaudio/best[ext=mp4]/best"
-        )
-    return (
-        f"bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]"
-        f"/bestvideo[height<={height}]+bestaudio"
-        f"/best[height<={height}][ext=mp4]"
-        f"/best[height<={height}]"
-        f"/best[ext=mp4]/best"
-    )
+        return "best[ext=mp4]/best"
+    return f"best[height<={height}][ext=mp4]/best[height<={height}]/best[ext=mp4]/best"
 
 
 def parse_progress_line(line: str) -> Optional[dict]:
